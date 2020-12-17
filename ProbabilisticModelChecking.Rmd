@@ -24,6 +24,7 @@ slides > slide:not(.nobackground):after {
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, fig.align="center")
+knitr::opts_chunk$set(dev.args = list(png = list(type = "cairo")))
 library(igraph)
 library(ggraph)
 library(dplyr)
@@ -54,12 +55,12 @@ Many systems are naturally random and randomess allows higher level abstractions
 * Communication protocol
 * Biological models
 
-The analysis of probabilities and expected values permitts to evaluate safety, reliability, resource usage and security.
+The analysis of probabilities and expected values permits to evaluate safety, reliability, resource usage and security.
 
 ## PRISM
 
-Comprehensive tool for probailistic model checking, other than an high level language form model definition and a flexible model
-checking engine, this program provides a GUI and utitlities for output visualization.
+Comprehensive tool for probabilistic model checking, other than an high level language form model definition and a flexible model
+checking engine, this program provides a GUI and utilities for output visualization.
 
 **Input**: Model (DTMC, CTMC, MDPs) + Specification (PCTL, CSL, LTL, PCTL*)  
 
@@ -100,7 +101,7 @@ A DTMC is basically a **state transition system** augmented with probabilities
 * $S$: set of states (nodes)
 * $s_{init}$: initial state (can be generalized to an initial probability distribution)
 * $P:(S \times S) \rightarrow [0,1]$: replaces transitions of Kripke structures, a transition is present when $P(s,s') > 0$.
-* $L: S \rightarrow 2^{AP}$: Labelling function, associates to each state a set of **atomic propositions** (from the set $AP$)
+* $L: S \rightarrow 2^{AP}$: Labeling function, associates to each state a set of **atomic propositions** (from the set $AP$)
 
 <center>
 ![](imgs/MC.png)
@@ -216,7 +217,7 @@ $$\pi_{s,k}=\pi_{s,k-1}P$$
 How probable is to be in a state if $k \rightarrow \inf$?
 
 A major property of DTMC is that, if the number of states is **finite** and the chain is **irreducible** and **aperiodic**, 
-it admits a unique limiting distriution for $\pi$, that is called **steady state**
+it admits a unique limiting distribution for $\pi$, that is called **steady state**
 
 The steady state $\pi$ is a probability distribution such that $\pi = \pi P$ and $\sum_{s\in S}\pi(s) = 1$
 
@@ -473,16 +474,16 @@ print_DTMC <- function(P, labels){
     as_tbl_graph()
   g$labels <- labels
   
-  ggraph(g) +
+  ggraph(g) + theme_bw() +
     geom_node_point(aes(color=as.factor(labels)), size = 10) +
-    geom_edge_loop(aes(alpha = E(g)$weight, 
+    geom_edge_loop(aes(alpha = log(E(g)$weight), 
                        label = round(E(g)$weight, 3)), 
                    end_cap = circle(10, 'mm'), 
                    start_cap = circle(10, 'mm'), 
                    angle_calc = 'along',
                    label_dodge = unit(2.5, 'mm'),
                    repel = T, color="red", arrow = arrow(length = unit(4, 'mm'))) +
-    geom_edge_link(aes(alpha = E(g)$weight,
+    geom_edge_link(aes(alpha = log(E(g)$weight),
                        label = round(E(g)$weight, 3)),
                        end_cap = circle(10, 'mm'), 
                        angle_calc = 'along',
@@ -490,7 +491,7 @@ print_DTMC <- function(P, labels){
                        start_cap = circle(10, 'mm'), 
                    repel = T, color="red", arrow = arrow(length = unit(4, 'mm'))) +
     geom_node_label(aes(label = labels), repel = T) + 
-    theme(legend.position = "none")
+    theme(legend.position = "none") 
 }
 ```
 
@@ -716,7 +717,7 @@ PCTL model checking on DTMCs is:
 
 Different operators have different computational cost; $P_{\sim p}[\phi_1 U \phi_2]$ is the 
 heaviest because of the linear equations system resolution algorithm. This is in fact 
-$O(|S|^3)$ with the **gaussian elimination algorithm**, but there exists faster methods.
+$O(|S|^3)$ with the **Gaussian elimination algorithm**, but there exists faster methods.
 
 Note that bounded formula depend on the bound $k$ for their complexity ($O(|S^2|k)$) but this number is
 usually small in real applications.
@@ -775,12 +776,12 @@ This leads to a system of equations that can be solved as usual.
 
 The following operators are added:
 
-* **istantaneous reward**: $R_{\sim r}[I^{=k}]$ (compute rewards at time $k$)
+* **instantaneous reward**: $R_{\sim r}[I^{=k}]$ (compute rewards at time $k$)
 * **cumulative reward**: $R_{\sim r}[C^{\le k}]$ (compute cumulative rewards up to time $k$)
-* **reachability reward**: $R_{\sim r}[F\phi]$ (the expexted value of the reward before reaching states where
+* **reachability reward**: $R_{\sim r}[F\phi]$ (the expected value of the reward before reaching states where
 $\phi$ holds is ...)
 
-The first two are computed by simulation while the latter by solving the previously presentated linear equations system.
+The first two are computed by simulation while the latter by solving the previously presented linear equations system.
 (it is possible, like with $P$ operators, to query for the exact value by defining the $R_{=?}$ operator)
 
 ## Counterexamples
@@ -953,7 +954,7 @@ The approach is similar to that of LTL (recall that $\phi$ are state formulae wh
 
 * The PCTL* formula is parsed bottom up 
 * In the case of $P_{\sim p}[\psi]$ (new cases):
-  * maximal state formulae are replaced by atomic propsitions (these formulae will be model ceched recursively)
+  * maximal state formulae are replaced by atomic propositions (these formulae will be model checked recursively)
   * the resulting formula is an LTL formula and can be model checked as seen in the previous slides
 * In other cases operations follow PCTL model checking
 
