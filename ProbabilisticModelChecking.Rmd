@@ -32,6 +32,8 @@ library(ggplot2)
 library(tidygraph)
 library(ggrepel)
 library(purrr)
+source('~/git/CIMICE/R/drugLexerParser.R')
+source('~/git/CIMICE/R/cpmc.R')
 ```
 
 ## What is Model Checking?
@@ -76,7 +78,7 @@ checking engine, this program provides a GUI and utilities for output visualizat
 
   * **Qualitative**: Boolean (TRUE/FALSE)
   * **Quantitative**: Real (Probabilities or Quantities)
-  
+
 # Discrete Time Marov Chains (DTMCs)
 
 ## Probabilities and notation
@@ -168,7 +170,48 @@ let $s$ be a state:
 It is possible to use this definition to define a probability measure for Cylinder sets: 
 
 $$P_s(cyl(p)) = P_s(p) \forall_{\mbox{finite}} p$$
-  
+
+# Examples 
+
+## Simple two level server:
+
+In this simple example we consider a server that can accept two kind of requests:
+
+* **direct requests**, that are resolved locally
+* **authentication requests**, that require to forward the request to another server 
+
+<center>
+![](imgs/Example_Servers.png)
+</center>
+
+This example shows a CTMC (Continuous Time Markov Chain), it is possible to obtain
+approximated DTMC from CTMC (see: Time discretization of Markov chains,
+Bogdan Doytchinov and Rachel Irby) 
+
+```{r, warning=F, message=F}
+library(CIMICE) # import simple routines to define dtmc
+library(expm)
+# define rates (expected number of sent messages)
+rho <- 20
+mu <- 15
+lambda <- 5
+
+# Q: infinitesimal generator matrix (intensities)
+# columns represent entering and exiting rates from a node
+Q <- matrix(c(-rho, mu, mu, rho, -mu-lambda, 0, 0, lambda, -mu), ncol=3)
+Q
+# discretization t=1min.
+t <- 1
+P <- expm(t*Q)
+
+DTMC <- cpmc(P=P, labels = list(c("user"),c("server"),c("auth_server")))
+cpmc.normalize(DTMC)
+DTMC$plot()
+
+cat(DTMC$to.prism("test", initial=1, initial_state_description = c("user")))
+```
+
+
 # Operating on DTMCs
 
 ## Reachability
@@ -936,7 +979,7 @@ Proof sketch:
 $\omega$-regular languages can be converted to DRA, and $D \otimes A$ maps $\omega$-paths so that:
 
 $$\omega \models \psi \iff \omega' \models \bigvee_{i\in 1..k}(FG\lnot l_i \land GF k_i)$$
-Being $FG\phi$ and $GF\phi$ measurable (by previous proofs), $\sigma$-algebras are closed under union and intersection, therfore
+Being $FG\phi$ and $GF\phi$ measurable (by previous proofs), $\sigma$-algebras are closed under union and intersection, therefore
 the whole formula is measurable.
 
 ## Complexity
@@ -959,9 +1002,179 @@ The approach is similar to that of LTL (recall that $\phi$ are state formulae wh
 * In other cases operations follow PCTL model checking
 
 
+# An application in Bioinformatics
+
+## CIMICE: 
+
+### **(Markov) Chain Method To Inferr Cancer Evolution**
+
+CIMICE is a tool in the field of **tumor philogenetics** (or **cancer progression**)
+with the goal of describing the relation between **genotypes** in a specific context:
+
+* single-cell sequencing
+* partial infinite site assumption holds
+* mutations are limited to INDELS
+
+The **input** data of CIMICE is a mutational matrix, that describes for each sample the
+genes that were observed as mutated compared to a certain reference (usually 
+normal cells from the same patient)
+
+The **output** is a DTMC (that we also call CPMC, Cancer Progression Markov Chain)
+that has a DAG topology (except for sink states, that have a self loop with probability
+one). Each node og this DTMC is labelled with a genotype, a list of mutated genes. 
+
+**GitHub**: https://github.com/redsnic/CIMICE
+
+## Enriching CIMICE's output
+
+The DTMC constructed by CIMICE has a very simple topology, the steady state
+distribution in very easy to compute and should describe how cancer cells
+are expected to divide in the many different tumor subtypes. 
+
+With the development of cancer treatments, it would be quite of interest 
+to adapt these models to account for drug effects.
+
+In a first approach to this topic we considered **two** very simple options:
+
+* Drug that are lethal for certain cellular subtypes (those are quite common)
+* Drug that induce a mutation in the target cancer cell, adding or removing alterations
+
+## Defining treatment effects
+
+A lexer-parser pair was written, in order to define a simple language
+to make easier the definition of such drug effects. Consider the following
+example.
+
+```
+# --- Treatment description file --- 
+# (comment lines start with '#')
+# Format:
+#
+# drugName {
+#   [guard] action action_params;
+#   [guard] kill efficacy;
+#   [guard] mutate [ Gene1, -Gene2, ... ] efficacy; # "-Gene" means remove Gene 
+# }
+#
+# drugName2 { ... }
+# ...
+#
+# Syntax of guards 
+# (they describe the genotype necessary to apply the effects of the drug)
+#                 not      and             or
+# guard := GENE ; - GENE ; guard & guard ; guard | guard ; ( guard )  
+
+firstDrug { 
+    [AAA | BBB] kill 0.9;
+} 
+ 
+secondDrug {
+    [(AAA & BBB) | CCC] mutate [AAA,-BBB] 0.5; 
+    [ccc] kill 0.2;
+}
+
+simpleTest{
+    [D] mutate [-D,B] 0.5;
+    [A] kill 0.5;
+    [A & D] kill 1;
+}
+```
+
+## Effect application and DTMC alteration
+
+The application of the effect of the drugs is made effect by effect
+following the definition order for the selected treatment.
+
+**Kill** effects are applied on all the nodes of the DTMC whose labels satisfy
+the guard and is implemented by adding a new **sink** node representing 
+the cells killed by the application of treatments. An edge of the given
+probability will connect the target node with this sink node.
+
+**Mutate** effects are slightly more complex, when a node satisfy the 
+guard its label is modified as described by the rule. If a node 
+with that label does not exist, it is created. The target node will 
+point to this node with the given probability.
+
+## An example
+
+Here is a full working example on how to create a PRISM model form CIMCE:
+
+```{r, message = F, warning=F}
+library(CIMICE)
+# CIMICE input dataset
+example.dataset()
+# run CIMICE analysis
+cimice.out <- quick.run(example.dataset())
+# build a DTMC from CIMICE's output
+DTMC <- to.cpmc(cimice.out$topology, cimice.out$weights, cimice.out$labels)
+# plot current DTMC
+DTMC$plot()
+# read treatment file (it is the one from the previous example)
+treatments <- load.treatments("/home/redsnic/git/CIMICE/inst/extdata/test.treatments")
+# apply a treatment
+cpmc.apply.treatment(DTMC, "simpleTest", treatments)
+# plot again
+DTMC$plot()
+# remove not reachable nodes
+cpmc.prune(DTMC, label="Clonal")
+# plot again
+DTMC$plot()
+```
 
 
+```{r, message = F, results=F}
+# create prism model
+cat(DTMC$to.prism("testModel"))
+```
 
+![](imgs/CIMICEX.png)
+
+## Evaluating properties with PRIMS
+
+Consider the following DTMC:
+
+```{r, include = F, warning=F}
+cimice.out <- quick.run(example.dataset())
+DTMC <- to.cpmc(cimice.out$topology, cimice.out$weights, cimice.out$labels)
+treatments <- load.treatments("/home/redsnic/git/CIMICE/inst/extdata/test.treatments")
+cpmc.apply.treatment(DTMC, "simpleTest2", treatments)
+cpmc.prune(DTMC, label="Clonal")
+```
+
+```{r, warning=F, message=F}
+DTMC$plot()
+```
+
+```{r, results=F}
+cat(DTMC$to.prism("test2"))
+```
+
+![](imgs/CIMICEX2.png)
+
+## Future plans
+
+The current implementation of treatments is just a starting point. The first 
+relevant aspect is to have better flexibility on how drug effect are **combined**.
+In this specific case two options are of interest:
+
+* **subsequent application**: effects are applied one after another (implemented)
+* **simultaneous application**: effect are combined and applied together
+
+The second point requires to define some assumption about drug interaction and their
+degree if independence. The syntax of the drug description language should be modified
+accordingly to simplify the definition of this kind of behaviors.
+
+Utilities to easily compare the resulting DTMC are also needed as with a 
+improved PRIMS integration.
+
+## References
+
+* **PRIMS**: https://www.prismmodelchecker.org/
+* **Lectures**: https://www.prismmodelchecker.org/lectures/pmc/
+* **Pubblications**: https://www.prismmodelchecker.org/publ-selected.php
+* **CTMC Discretization**: https://www.jstor.org/stable/24340803?seq=1
+* **CIMICE**: https://github.com/redsnic/CIMICE
+* **Simple examples**: https://arxiv.org/pdf/1808.08650.pdf and https://www.researchgate.net/publication/335250459_Proportional_Lumpability
 
 
 
