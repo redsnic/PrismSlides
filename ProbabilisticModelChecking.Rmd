@@ -23,7 +23,7 @@ slides > slide:not(.nobackground):after {
 </style>
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.align="center")
+knitr::opts_chunk$set(echo = TRUE, fig.align="center", message = F, warning = F)
 knitr::opts_chunk$set(dev.args = list(png = list(type = "cairo")))
 library(igraph)
 library(ggraph)
@@ -59,7 +59,7 @@ The analysis of probabilities and expected values permits to evaluate safety, re
 
 ## PRISM
 
-Comprehensive tool for probabilistic model checking, other than an high level language form model definition and a flexible model
+Comprehensive tool for probabilistic model checking, other than a high level language form model definition and a flexible model
 checking engine, this program provides a GUI and utilities for output visualization.
 
 **Input**: Model (DTMC, CTMC, MDPs) + Specification (PCTL, CSL, LTL, PCTL*)  
@@ -127,7 +127,7 @@ In DTMC time can be either:
 * **Homogeneous**: Time flow is constant and each tick implies a transition in the DTMC
 * **Non-Homogeneous**: An external event implies a transition and so a time tick.
 
-**Memeoryless property**: 
+**Memoryless property**: 
 
  * Transition probabilities depend exclusively from the current state
  
@@ -769,7 +769,7 @@ $$\pi_{s,k}(s') = \sum_{s''\in S}{P(s'',s')\pi_{s,k-1}(s'')}$$
 
 **Notes**:
 
-* In this computation is done in a "forward" fashion
+* This computation is done in a "forward" fashion
 * It is possible to compute these probabilities for each final state with simple vector per matrix multiplications:
 
 $$\pi_{s,0}=0$$
@@ -917,7 +917,7 @@ Relevant equivalences and similarities:
 * $P_{>0}[F\phi] \equiv EF \phi$
 * $P_{>0}[F\phi] \cong EF \phi$
 
-The last similarity is due to the fact that probability $\ge 1$ could be because of a limt to infinity
+The last similarity is due to the fact that probability $\ge 1$ could be because of a limit to infinity
 
 ## LTL  with probabilities
 
@@ -928,14 +928,14 @@ LTL syntax is the following:
 
 $$\psi ::= \mbox{true}|a|\lnot\psi|\psi_1 \land \psi_2| \psi_1 U \psi_2 | X \psi$$
 
-LTL has therfore no separation between state and path formulae
+LTL has therefore no separation between state and path formulae
 
 LTL can also be extended with probabilities and can express different formulae from CTL:
 
   * LTL only: $F[\mbox{req} \land X \mbox{ack}]$ (in every future at a certain time a request is acknowledged)
   * CTL only: $AG EF \mbox{init}$ (can always return to the initial state)
   
-This is because LTL always implicitly implies forall path quantification ($A$).
+This is because LTL always implicitly implies for all path quantification ($A$).
   
 ## Example:
 
@@ -967,7 +967,7 @@ that path formulae can produce state formulae:
 * **Input**: $D_{DTMC}=(S,s_{init},P,L)$ and $\phi_{PCTL}$
 * **Output**: $Sat(\phi)=\{s\in S | s \models \phi\}$
 
-* **Formulae sataisfaction**: $D_{DTMC} \models \phi$ if:
+* **Formulae satisfaction**: $D_{DTMC} \models \phi$ if:
   - $s_{init} \models \phi$ 
   - alternatively if $\forall s . s \models phi$
   
@@ -1087,9 +1087,9 @@ map_lgl(p_, ~ ifelse(. >= 0.99, TRUE, FALSE))
 
 We define these auxiliary sets:
 
-* $S^{yes} = Sat(\phi_2)$: In this set the until formula is sataisfied
-* $S^{no} = S \setminus (Sat(\phi_1) \cup Sat(\phi_2))$: in this set the until formula is not sataisfied
-* $S^{?} = S \setminus (S^{yes} \cup S^{no})$: in this set it is not certain if the until formula is sataified
+* $S^{yes} = Sat(\phi_2)$: In this set the until formula is satisfied
+* $S^{no} = S \setminus (Sat(\phi_1) \cup Sat(\phi_2))$: in this set the until formula is not satisfied
+* $S^{?} = S \setminus (S^{yes} \cup S^{no})$: in this set it is not certain if the until formula is satisfied
 
 ## Bounded Until
 
@@ -1300,7 +1300,7 @@ Of costs and reward it is possible to compute:
 
 ## Rewards
 
-Costs and rewards can be modelled in the same way, so we will referr to the term rewards only.
+Costs and rewards can be modelled in the same way, so we will refer to the term rewards only.
 
 Rewards can seen as labels and are divided in two types:
 
@@ -1350,7 +1350,7 @@ The first two are computed by simulation while the latter by solving the previou
 ## Counterexamples
 
 Counterexample generation is one of the strengths of model checking. This typically consists in generating a trace
-of statates and transitions such that the tested logical formula is not sataisfied.
+of states and transitions such that the tested logical formula is not satisfied.
 
 In the case of DTMCs, counterexamples must be redefined to cope with probabilities.
 In this context a **trace** is no longer a path but a set of them.
@@ -1400,9 +1400,9 @@ We would like to find a minimal counter example set with the highest probability
 * the DTMC is modified so that: $\lnot \phi_1 \land \lnot \phi_2$ satisfying sets become absorbing, a state $t$ is added and
     every state sataisfying $\phi_2$ is added a transition to it.
 * the DTMC is converted to a weighted directed acyclic graph with weights $w(s,s') = log(\frac{1}{P(s,s')})$
-* Finally the following property is fundamental:
+* Finally the following property is fundamental (for paths with same source and destination):
   
-$$\forall(\omega, \omega')(P_s(\omega')\ge P_s(\omega) \iff d(\omega')\le(\omega))$$
+$$\forall(\omega, \omega')(P_s(\omega')\ge P_s(\omega) \iff d(\omega')\le d(\omega))$$
   
 * In the case of **bounded until** minimum paths of length $k$ are computed
 * With **unbounded until** pairwise minimum paths are computed
@@ -1434,14 +1434,14 @@ Finally $B$ is splitted accordingly. This process is repeated until there are no
 
 ## $\omega$-regular properties
 
-With $\omega$-regular properties it is possible to consider infinite paths and so to model fairnes and liveness properties.
+With $\omega$-regular properties it is possible to consider infinite paths and so to model fairness and liveness properties.
 
 * Recall $\omega$-regular expression: 
 
 $$E ::= \emptyset|\varepsilon|\alpha\in \Sigma| E+E| E.E | E^*$$
 $$G = E_1.(E'_1)^{\omega} + \dots + E_n.(E'_n)^{\omega}$$
 
-It is possible to construct these properties using the atomic propositions $AP$, labels of the DTMCs. A path $\omega$ sataisfies $P$
+It is possible to construct these properties using the atomic propositions $AP$, labels of the DTMCs. A path $\omega$ satisfies $P$
 if $trace(\omega) \in P$ (with $P \subseteq (2^{AP})^{\omega}$).
 
 For example $((\lnot \mbox{succ})^*.\mbox{succ})^{\omega}$ models a computation where $succ$ happens infinitely often.
@@ -1680,8 +1680,8 @@ Printing steady-state probabilities in plain text format below:
 Time for steady-state probability computation: 0.003 seconds.
 ```
 
-This means that $\sim$83% of the cancer cell are eventually expected to be killed by
-the drug while the remaining $\sim$17% will continue proliferating and will carry
+This means that 83\% of the cancer cell are eventually expected to be killed by
+the drug while the remaining 17\% will continue proliferating and will carry
 a mutation on the gene B.
 
 Even if this is just a toy model, this kind of analysis could be useful 
@@ -1700,7 +1700,7 @@ In this specific case two options are of interest:
 * **simultaneous application**: effect are combined and applied together
 
 The second point requires to define some assumption about drug interaction and their
-degree if independence. The syntax of the drug description language should be modified
+degree of independence. The syntax of the drug description language should be modified
 accordingly to simplify the definition of this kind of behaviors.
 
 Utilities to easily compare the resulting DTMC are also needed as with a 
