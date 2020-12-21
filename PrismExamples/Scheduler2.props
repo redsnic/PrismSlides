@@ -1,0 +1,25 @@
+// can I always reach any state?
+P>=1[ F check_queue ];
+P>=1[ F prepare ];
+P>=1[ F execution ];
+P>=1[ F finalize ];
+// steady state distribution
+S=?[ check_queue ];
+S=?[ prepare ];
+S=?[ execution ];
+S=?[ finalize ];
+// expected time in the different states
+// for 10K time units
+R{"scheduling_time"}=?[ C<=10000 ];
+R{"execution_time"}=?[ C<=10000 ];
+R{"load_time"}=?[ C<=10000 ];
+R{"finalize_time"}=?[ C<=10000 ];
+// completed task in 10K time units
+R{"completed_tasks"}=?[ C<=10000 ];
+// expected value for the timer after 1000 time units
+R{"timer"}=?[ I=1000 ]
+// expected values for the state after 100 time units
+R{"scheduling_time"}=?[ I=100 ];
+R{"execution_time"}=?[ I=100 ];
+R{"load_time"}=?[ I=100 ];
+R{"finalize_time"}=?[ I=100 ];

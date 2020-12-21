@@ -1,0 +1,32 @@
+dtmc
+module  test
+	x : [1..3] init 1;
+	_auth_server : bool init false;
+	_server : bool init false;
+	_user : bool init true;
+	[] x=1 -> 0.428571428571429:(x'=1) & (_auth_server'=false) & (_server'=false) & (_user'=true)
+		+ 0.428571429258479:(x'=2) & (_auth_server'=false) & (_server'=true) & (_user'=false)
+		+ 0.142857142170092:(x'=3) & (_auth_server'=true) & (_server'=false) & (_user'=false);
+	[] x=2 -> 0.428571428571428:(x'=1) & (_auth_server'=false) & (_server'=false) & (_user'=true)
+		+ 0.428571428571429:(x'=2) & (_auth_server'=false) & (_server'=true) & (_user'=false)
+		+ 0.142857142857143:(x'=3) & (_auth_server'=true) & (_server'=false) & (_user'=false);
+	[] x=3 -> 0.428571428571428:(x'=1) & (_auth_server'=false) & (_server'=false) & (_user'=true)
+		+ 0.428571426510275:(x'=2) & (_auth_server'=false) & (_server'=true) & (_user'=false)
+		+ 0.142857144918296:(x'=3) & (_auth_server'=true) & (_server'=false) & (_user'=false);
+endmodule
+
+rewards "observed_addtional_requests"
+	_auth_server : 1;
+endrewards
+
+rewards "observed_default_requests"
+	_server : 1;
+endrewards
+
+rewards "observed_user_requests"
+	_user : 1;
+endrewards
+
+rewards "transitions"
+	true : 1;
+endrewards

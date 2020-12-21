@@ -1,0 +1,84 @@
+// simple scheduler with queue
+
+dtmc
+
+const int SCHEDULE_TIME = 10;
+const int LOAD_TIME = 5;
+const int EXE_TIME = 100;
+const int FINALIZE_TIME = 2;
+// probability of prelation
+const double arrival_rate = 0.0001; 
+// probability that the process terminates eralyer than expexted
+const double early_end_rate = 0.0001; 
+
+module Scheduler
+    check_queue : bool init true;
+    prepare : bool init false;
+    execution : bool init false; 
+    finalize : bool init false;
+    wait_timer : [1..EXE_TIME] init 1;
+    
+    // scheduling
+    [] check_queue=true & prepare=false & execution=false & finalize=false & (wait_timer < SCHEDULE_TIME) -> 
+	(1-arrival_rate):(wait_timer'=wait_timer+1) +
+	arrival_rate:(check_queue'=true) & (prepare'=false) & (execution'=false) & (finalize'=false) & (wait_timer'=1);
+
+    [sched_end] check_queue=true & prepare=false & execution=false & finalize=false & (wait_timer >= SCHEDULE_TIME) -> 
+	(1-arrival_rate):(wait_timer'=1) & (prepare'=true) & (check_queue'=false)+
+	arrival_rate:(check_queue'=true) & (prepare'=false) & (execution'=false) & (finalize'=false) & (wait_timer'=1);
+
+    // load process
+    [] check_queue=false & prepare=true & execution=false & finalize=false & (wait_timer < LOAD_TIME) -> 
+	(1-arrival_rate):(wait_timer'=wait_timer+1)+
+	arrival_rate:(check_queue'=true) & (prepare'=false) & (execution'=false) & (finalize'=false) & (wait_timer'=1);
+
+    [load_end] check_queue=false & prepare=true & execution=false & finalize=false & (wait_timer >= LOAD_TIME) -> 
+	(1-arrival_rate):(wait_timer'=1) & (execution'=true) & (prepare'=false)+
+	arrival_rate:(check_queue'=true) & (prepare'=false) & (execution'=false) & (finalize'=false) & (wait_timer'=1);
+
+    // run process
+    [exe] check_queue=false & prepare=false & execution=true & finalize=false & (wait_timer < EXE_TIME) -> 
+	(1-arrival_rate-early_end_rate):(wait_timer'=wait_timer+1)+
+	arrival_rate:(check_queue'=true) & (prepare'=false) & (execution'=false) & (finalize'=false) & (wait_timer'=1)+
+	early_end_rate:(check_queue'=false) & (prepare'=false) & (execution'=false) & (finalize'=true) & (wait_timer'=1);
+
+    [exe_end] check_queue=false & prepare=false & execution=true & finalize=false & (wait_timer >= EXE_TIME) -> 
+	(1-arrival_rate):(wait_timer'=1) & (finalize'=true) & (execution'=false)+
+	arrival_rate:(check_queue'=true) & (prepare'=false) & (execution'=false) & (finalize'=false) & (wait_timer'=1);
+
+    // finalize execution
+    [] check_queue=false & prepare=false & execution=false & finalize=true & (wait_timer < FINALIZE_TIME) -> 
+        1:(wait_timer'=wait_timer+1);
+
+    [done] check_queue=false & prepare=false & execution=false & finalize=true & (wait_timer >= FINALIZE_TIME) ->
+	1:(wait_timer'=1) & (check_queue'=true) & (finalize'=false);
+endmodule
+
+
+rewards "completed_tasks"
+    [done] true : 1;
+endrewards
+
+rewards "scheduling_time"
+    check_queue=true & prepare=false & execution=false & finalize=false : 1;
+endrewards
+
+rewards "execution_time"
+    check_queue=false & prepare=false & execution=true & finalize=false : 1;
+endrewards
+
+rewards "load_time"
+    check_queue=false & prepare=true & execution=false & finalize=false : 1;
+endrewards
+
+rewards "finalize_time"
+    check_queue=false & prepare=false & execution=false & finalize=true : 1;
+endrewards
+
+rewards "timer"
+    true : wait_timer;
+endrewards
+
+
+
+    

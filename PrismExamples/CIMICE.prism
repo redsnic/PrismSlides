@@ -1,0 +1,32 @@
+dtmc
+module  test2
+	x : [1..10] init 6;
+	_A : bool init false;
+	_B : bool init false;
+	_C : bool init false;
+	_Clonal : bool init true;
+	_D : bool init false;
+	_sink_node : bool init false;
+	[] x=1 -> 0.5:(x'=3) & (_A'=true) & (_B'=false) & (_C'=false) & (_Clonal'=false) & (_D'=true) & (_sink_node'=false)
+		+ 0.5:(x'=7) & (_A'=false) & (_B'=true) & (_C'=false) & (_Clonal'=false) & (_D'=false) & (_sink_node'=false);
+	[] x=2 -> 0.5:(x'=3) & (_A'=true) & (_B'=false) & (_C'=false) & (_Clonal'=false) & (_D'=true) & (_sink_node'=false)
+		+ 0.5:(x'=10) & (_A'=false) & (_B'=false) & (_C'=false) & (_Clonal'=false) & (_D'=false) & (_sink_node'=true);
+	[] x=3 -> 0.05625:(x'=4) & (_A'=true) & (_B'=false) & (_C'=true) & (_Clonal'=false) & (_D'=true) & (_sink_node'=false)
+		+ 0.16875:(x'=5) & (_A'=true) & (_B'=true) & (_C'=false) & (_Clonal'=false) & (_D'=true) & (_sink_node'=false)
+		+ 0.225:(x'=8) & (_A'=true) & (_B'=true) & (_C'=false) & (_Clonal'=false) & (_D'=false) & (_sink_node'=false)
+		+ 0.55:(x'=10) & (_A'=false) & (_B'=false) & (_C'=false) & (_Clonal'=false) & (_D'=false) & (_sink_node'=true);
+	[] x=4 -> 0.225:(x'=4) & (_A'=true) & (_B'=false) & (_C'=true) & (_Clonal'=false) & (_D'=true) & (_sink_node'=false)
+		+ 0.225:(x'=9) & (_A'=true) & (_B'=true) & (_C'=true) & (_Clonal'=false) & (_D'=false) & (_sink_node'=false)
+		+ 0.55:(x'=10) & (_A'=false) & (_B'=false) & (_C'=false) & (_Clonal'=false) & (_D'=false) & (_sink_node'=true);
+	[] x=5 -> 0.225:(x'=5) & (_A'=true) & (_B'=true) & (_C'=false) & (_Clonal'=false) & (_D'=true) & (_sink_node'=false)
+		+ 0.225:(x'=8) & (_A'=true) & (_B'=true) & (_C'=false) & (_Clonal'=false) & (_D'=false) & (_sink_node'=false)
+		+ 0.55:(x'=10) & (_A'=false) & (_B'=false) & (_C'=false) & (_Clonal'=false) & (_D'=false) & (_sink_node'=true);
+	[] x=6 -> 0.333333333333333:(x'=1) & (_A'=false) & (_B'=false) & (_C'=false) & (_Clonal'=false) & (_D'=true) & (_sink_node'=false)
+		+ 0.666666666666667:(x'=2) & (_A'=true) & (_B'=false) & (_C'=false) & (_Clonal'=false) & (_D'=false) & (_sink_node'=false);
+	[] x=7 -> 1:(x'=7) & (_A'=false) & (_B'=true) & (_C'=false) & (_Clonal'=false) & (_D'=false) & (_sink_node'=false);
+	[] x=8 -> 0.5:(x'=8) & (_A'=true) & (_B'=true) & (_C'=false) & (_Clonal'=false) & (_D'=false) & (_sink_node'=false)
+		+ 0.5:(x'=10) & (_A'=false) & (_B'=false) & (_C'=false) & (_Clonal'=false) & (_D'=false) & (_sink_node'=true);
+	[] x=9 -> 0.5:(x'=9) & (_A'=true) & (_B'=true) & (_C'=true) & (_Clonal'=false) & (_D'=false) & (_sink_node'=false)
+		+ 0.5:(x'=10) & (_A'=false) & (_B'=false) & (_C'=false) & (_Clonal'=false) & (_D'=false) & (_sink_node'=true);
+	[] x=10 -> 1:(x'=10) & (_A'=false) & (_B'=false) & (_C'=false) & (_Clonal'=false) & (_D'=false) & (_sink_node'=true);
+endmodule
