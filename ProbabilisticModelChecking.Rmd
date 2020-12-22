@@ -62,7 +62,9 @@ The analysis of probabilities and expected values permits to evaluate safety, re
 Comprehensive tool for probabilistic model checking, other than a high level language form model definition and a flexible model
 checking engine, this program provides a GUI and utilities for output visualization.
 
-**Input**: Model (DTMC, CTMC, MDPs) + Specification (PCTL, CSL, LTL, PCTL*) [also probabilistic automata and probabilistic timed automata] 
+**Input**: Model (DTMC, CTMC, MDPs) + Specification (PCTL, CSL, LTL, PCTL*) 
+
+[can also operate on probabilistic automata and probabilistic timed automata] 
 
 **Processing**: 
 
