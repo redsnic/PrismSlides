@@ -8,7 +8,7 @@ const int EXE_TIME = 100;
 const int FINALIZE_TIME = 2;
 // probability of prelation
 const double arrival_rate = 0.0001; 
-// probability that the process terminates eralyer than expexted
+// probability that the process terminates eralier than expected
 const double early_end_rate = 0.0001; 
 
 module Scheduler

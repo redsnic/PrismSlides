@@ -62,7 +62,7 @@ The analysis of probabilities and expected values permits to evaluate safety, re
 Comprehensive tool for probabilistic model checking, other than a high level language form model definition and a flexible model
 checking engine, this program provides a GUI and utilities for output visualization.
 
-**Input**: Model (DTMC, CTMC, MDPs) + Specification (PCTL, CSL, LTL, PCTL*)  
+**Input**: Model (DTMC, CTMC, MDPs) + Specification (PCTL, CSL, LTL, PCTL*) [also probabilistic automata and probabilistic timed automata] 
 
 **Processing**: 
 
@@ -77,7 +77,7 @@ checking engine, this program provides a GUI and utilities for output visualizat
   * **Qualitative**: Boolean (TRUE/FALSE)
   * **Quantitative**: Real (Probabilities or Quantities)
 
-# Discrete Time Marov Chains (DTMCs)
+# Discrete Time Markov Chains (DTMCs)
 
 ## Probabilities and notation
 
@@ -149,7 +149,7 @@ $$P(X(t) = s_k | X(k-1)=s_{k-1})$$
 **GRAPH**:
 
 <center>
-![](imgs/SCHED_GRAPH.png){width=75%, position="center"}
+![](imgs/SCHED_GRAPH.png){width=65%, position="center"}
 </center>
 
 **REWARDS**:
@@ -693,19 +693,6 @@ cat(DTMC$to.prism("test", initial=1, initial_state_description = c("user")))
 ![](imgs/DISCRETE_PROPRS.png)
 </center>
 
-# Operating on DTMCs
-
-## Reachability
-
-It corresponds to the probability of reaching a certain state or state set ($T$)
-
-$$ProbReach(s,T) = P_s(Reach(s,T)) = \{s_0...s_n... \in Path(s) | \exists s_i \in T\}$$
-
-This probability is the generalized union of cylinder sets whose path $s_0...s_{m-1}s_m$ is simple (has no cycles) and s.t. 
-
-$$\forall (s_0...s_{m-1})(s\notin T)  \mbox{   and   } s_m \in T$$
-
-These sets are finite and for the closure property of $\sigma$-algebras $ProbReach(s,T)$ is measurable
 
 # Probabilistic model checking
 
@@ -718,7 +705,7 @@ These sets are finite and for the closure property of $\sigma$-algebras $ProbRea
 **Notation**:
 
 * $Path(s)$: set of infinite paths starting from s
-* $cyl(s_0...s_n)$: set og infinite paths starting with prefix $s_1...s_n$
+* $cyl(s_1...s_n)$: set og infinite paths starting with prefix $s_1...s_n$
   
 ## Probability measure over paths
 
@@ -745,6 +732,21 @@ let $s$ be a state:
 It is possible to use this definition to define a probability measure for Cylinder sets: 
 
 $$P_s(cyl(p)) = P_s(p) \forall_{\mbox{finite}} p$$
+
+# Operating on DTMCs
+
+## Reachability
+
+It corresponds to the probability of reaching a certain state or state set ($T$)
+
+$$ProbReach(s,T) = P_s(Reach(s,T)) = \{s_0...s_n... \in Path(s) | \exists s_i \in T\}$$
+
+This probability is the generalized union of cylinder sets whose path $s_0...s_{m-1}s_m$ are finite and s.t. 
+
+$$\forall (s_0...s_{m-1})(s\notin T)  \mbox{   and   } s_m \in T$$
+(such that they reach $T$ with their final transition)
+
+These sets are finite and for the closure property of $\sigma$-algebras $ProbReach(s,T)$ is measurable
 
 ## Computing Reachability
 
@@ -851,7 +853,7 @@ In **CTL** temporal operators are the the following:
 * **AFa**: In every path $a$ holds sometimes in the future
 * **EGa**: It exists a path where $a$ always holds
 * **AGa**: In every path $a$ always holds
-* **EaUb**: It exists a path where $a$ holds continuosly until $b$ holds (and $b$ will hold in the future) 
+* **EaUb**: It exists a path where $a$ holds continuously until $b$ holds (and $b$ will hold in the future) 
 * **AaUb**: In every path $a$ holds continuosly until $b$ holds (and it will in the future)
 * **EXa**: It exists a transition to a state where $a$ holds
 * **AXa**: Every transition from the current state leads to a state where $a$ holds
@@ -1136,8 +1138,8 @@ In this case in not possible to "simulate" the computation on the DTMC.
 
 We define some auxiliary sets as follows:
 
-* $S^{yes} = Sat(P_{\le1}[\phi_1 \cup \phi_2])$
-* $S^{no} = Sat(P_{\le0}[\phi_1 \cup \phi_2])$
+* $S^{yes} = Sat(P_{\ge1}[\phi_1 U \phi_2])$
+* $S^{no} = Sat(P_{\le0}[\phi_1 U \phi_2])$
 
 To compute these sets auxiliary functions $\texttt{Prob0}$ and $\texttt{Prob1}$.
 
@@ -1175,7 +1177,7 @@ Prob0(Sat(phi_1), Sat(phi_2)){
 
 ## Prob1
 
-This algorithm computes $S^{yes} = Sat(P_{\le1}[\phi_1 \cup \phi_2])$
+This algorithm computes $S^{yes} = Sat(P_{\ge1}[\phi_1 \cup \phi_2])$
 
 In this case $Sat(P_{\color{red}{\lt} 1}[\phi_1 U \phi_2])$ is computed end $S^{yes}$ is obtained by difference as before.
 This consist in finding the states that can reach elements in $S^{no}$:
@@ -1194,18 +1196,18 @@ Prob1(Sat(phi_1), Sat(phi_2), S_no){
 }
 ```
 
-## PCTl until system of equation
+## PCTL until system of equation
 
 Now we have that:
 
 $$Prob(s, \phi_1 U \phi_2) = \cases{ 1 \mbox{  if  } s \in S^{yes} \\ 
   0 \mbox{  if  } s \in S^{no} \\
-  \sum{s' \in S}{P(s,s')Prob(s', \phi_1 U \phi_2)} \mbox{  otherwise} }$$
+  \sum_{s' \in S}{P(s,s')Prob(s', \phi_1 U \phi_2)} \mbox{  otherwise} }$$
   
-Note that this definition also permits to optimize the problem so that this system has only $|S^{?}|$ unknows,
+Note that this definition also permits to optimize the problem so that this system has only $|S^{?}|$ unknowns,
 instead of $|S|$. 
 
-To solve this system of equations many approaches are available in the litterature.
+To solve this system of equations many approaches are available in the literature.
 
 ## Example
 
@@ -1714,6 +1716,7 @@ improved PRIMS integration.
 * **CTMC Discretization**: https://www.jstor.org/stable/24340803?seq=1
 * **CIMICE**: https://github.com/redsnic/CIMICE
 * **Simple examples**: https://arxiv.org/pdf/1808.08650.pdf 
+* **These slides**: https://github.com/redsnic/PrismSlides
 
 
 
